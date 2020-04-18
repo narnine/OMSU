@@ -1,5 +1,6 @@
 #pragma once
-#include "memory.h"
+
+class Memory;
 
 class IOperation {
 public:
@@ -7,5 +8,4 @@ public:
   virtual ~IOperation() = default;
 //TODO cout
 };
-;
 // ValueRegister &regist, IValue &value

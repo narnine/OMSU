@@ -26,8 +26,9 @@ int main() {
       new ValueLiteral(5))); // первый операнд обязан быть IMutableValue, а
   // второй может быть просто IValue
   mem.PushOp(new MovOp(new ValueRegister(r1), new ValueLiteral(1)));
-  mem.PushOp(new MulOp(new ValueRegister(r1), new ValueLiteral(3)));
-  mem.PushOp(new AddOp(new ValueRegister(r0), new ValueLiteral(-1)));
+  mem.PushOp(new MovOp(new ValueRegister(r0), new ValueLiteral(1)));
+
+
 
   interpreter.Run(mem);
 }

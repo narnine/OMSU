@@ -1,4 +1,5 @@
 #include "../include/cmpop.h"
+#include "iostream"
 void CmpOp::Apply(Memory &mem) {
   if (op1_->Get(mem) == op2_->Get(mem)) {
     mem.SetReg(cmp, 0);

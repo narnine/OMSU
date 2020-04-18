@@ -1,19 +1,62 @@
 #pragma once
 
 #include <iostream>
-template <typename T>
 
-class ScopedPtr {
-private:
+// void assert(T a, T b) {
+//  if (a != b) {
+//    std::cout << "ERROR" << std::endl;
+//    exit(-1);
+//  }
+//}
+
+template<typename T>
+class scoped_ptr {
+ private:
   T *ptr_;
 
-public:
-  explicit ScopedPtr(T *ptr) : ptr_(ptr) {}
+ public:
+  typedef T element_type;
 
-  T *Get() const { return ptr_; }
+  explicit scoped_ptr(T *ptr = NULL) : ptr_(ptr) {}
 
-  T& operator*() const { *ptr_; }
-  //  TODO(Nariman)
-  void reset(T *p) {}
-  ~ScopedPtr() { std::cout << "~ScoredPtr" << std::endl; }
+  scoped_ptr(const scoped_ptr &scopedptr) = delete;
+
+  scoped_ptr &operator=(const scoped_ptr &) = delete;
+
+  T *Get() const {
+    return ptr_;
+  }
+
+  T &operator*() const {
+    return *ptr_;
+  }
+
+  T *operator->() const {
+    return ptr_;
+  }
+
+  void reset(T &p1 = NULL, T &p2 = NULL) {
+    if (p1 & p2) {
+      p2 = p1;
+    }
+    delete p1;
+  }
+
+  T *release(T &ptr = NULL) {
+    if (ptr) {
+      auto a = ptr_;
+      ptr_ = NULL;
+      return a;
+    }
+  }
+
+  // TODO(Nariman):
+  explicit operator bool() const {
+    return ptr_ != NULL;
+  }
+
+  ~scoped_ptr() {
+    std::cout << "~ScoredPtr" << std::endl;
+    delete ptr_;
+  }
 };

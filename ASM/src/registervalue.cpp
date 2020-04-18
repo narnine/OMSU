@@ -1,4 +1,5 @@
 #include "../include/registervalue.h"
+#include "iostream"
 
 int ValueRegister::Get(const Memory &mem) const { return mem.GetReg(reg_); }
 

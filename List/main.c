@@ -28,6 +28,7 @@ int main() {
   Prepend(list_two, 3);
   Prepend(list_two, 5);
   AppendAll(list, list_two);
+  DestroyList(list_two);
   Printf(list);
   Printf(list_two);
   //AssertEq(3, GetAt(list, 3), "empty list length should be zero");

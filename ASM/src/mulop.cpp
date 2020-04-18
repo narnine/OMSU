@@ -1,4 +1,5 @@
 #include "../include/mulop.h"
+#include "iostream"
 void MulOp::Apply(Memory &mem) {
   op1_->Set(mem, op1_->Get(mem) * op2_->Get(mem));
 }

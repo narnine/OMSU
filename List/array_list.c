@@ -1,6 +1,6 @@
 #include "list.h"
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 // Пользовательская структура, которая скрывает механизм хранения данных.
 struct List {
@@ -24,7 +24,7 @@ void Printf(List *this) {
 void MicroMemory(List *this) {
   this->capacity /= 4;
 
-  int *arr = (List *)malloc(this->capacity * sizeof(int));
+  int *arr = (int *)malloc(this->capacity * sizeof(int));
 
   for (int i = 0; i < this->size + 1; i++) {
     arr[i] = (this->array)[i];
@@ -39,7 +39,7 @@ void MicroMemory(List *this) {
 void AllocMemory(List *this) {
   this->capacity *= 2;
 
-  int *arr = (List *)malloc(this->capacity * sizeof(int));
+  int *arr = (int *)malloc(this->capacity * sizeof(int));
 
   for (int i = 0; i < this->size; i++) {
     arr[i] = (this->array)[i];
@@ -97,13 +97,9 @@ void AppendAll(List *this, const List *that) {
     AllocMemory(this);
   }
   for (int i = 0; i < that->size; i++) {
-    if (that->array[i] != NULL) {
-      this->length += 1;
-      this->size += 1;
-      this->array[this->length] = that->array[i];
-    } else {
-      break;
-    }
+    this->length += 1;
+    this->size += 1;
+    this->array[this->length] = that->array[i];
   }
 }
 
@@ -125,7 +121,7 @@ void RemoveAt(List *this, int index) {
   for (int i = index; i < this->size; i++) {
     (this->array)[i] = (this->array)[i + 1];
   }
-  if (this->array[this->size] == NULL && this->capacity >= this->size * 4) {
+  if (this->capacity >= this->size * 4) {
     MicroMemory(this);
   }
 }
@@ -134,16 +130,16 @@ void RemoveAll(List *this) {
   this->length = 0;
   this->capacity = 0;
   this->size = 0;
+  free(this);
 }
 
 int Pop(List *this) {
 
   int x = this->array[this->length];
-  this->array[this->length] = NULL;
 
   this->length -= 1;
   this->size -= 1;
-  if (this->array[this->size] == NULL && this->capacity >= this->size * 4) {
+  if (this->capacity >= this->size * 4) {
     MicroMemory(this);
   }
 
@@ -160,7 +156,6 @@ int Dequeue(List *this) {
     (this->array)[i] = (this->array)[i + 1];
   }
 
-  this->array[this->size] = NULL;
   if (this->capacity >= this->size * 4) {
     MicroMemory(this);
   }
@@ -169,3 +164,5 @@ int Dequeue(List *this) {
 
 int Length(const List *this) { return this->size; }
 int GetAt(const List *this, int index) { return this->array[index]; }
+
+// this->array[this->size] == NULL

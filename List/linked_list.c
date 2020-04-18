@@ -160,7 +160,6 @@ int Pop(List *this) {
 
 int Dequeue(List *this) {
   Node *first = this->head;
-  free(this->head);
   this->head = first->next;
   int a = first->value;
   free(first);

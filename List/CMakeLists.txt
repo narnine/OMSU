@@ -3,7 +3,4 @@ project(list_project C)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(list_project main.c
-        linked_list.c
-        #array_list.c
-        )
+add_executable(list_project main.c array_list.c)
