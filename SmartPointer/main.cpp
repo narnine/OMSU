@@ -1,3 +1,4 @@
+#include <cassert>
 #include <iostream>
 
 #include "include/scoped_ptr.h"
@@ -33,21 +34,53 @@ void bar() {
   // bool status = foo_ptr;        // - compilation fails
 }  //  foo_ptr уничтожен. Оператор delete вызван автоматически.
 
-void sstatic_assert(bool a, string b = "") {
-  if (a == true) {
-    cout << "ERROR" << endl;
-    exit(-1);
-  }
-}
-
-void assert(bool a = 1, scoped_ptr &ptr = NULL) {
-  if (!a) {
-    std::cout << "ERROR" << std::endl;
-    exit(-1);
-  }
-}
-
 static void test_scoped_ptr() {
+  static_assert(!std::is_convertible<int *, scoped_ptr<int>>::value,
+                "scoped ptr should not have implicit constructor from pointer!");
+
+  static_assert(!std::is_copy_constructible<scoped_ptr<int>>::value, "scoped ptr should not be copiable");
+
+  static_assert(!std::is_move_constructible<scoped_ptr<int>>::value, "scoped ptr should not be movable");
+
+  static_assert(!std::is_copy_assignable<scoped_ptr<int>>::value, "scoped ptr should not be copiable by operator=");
+
+  static_assert(!std::is_move_assignable<scoped_ptr<int>>::value, "scoped ptr should not be movable by operator=");
+
+  static_assert(std::is_same<scoped_ptr<int>::element_type, int>::value, "scoped ptr should contain element_type");
+
+  static_assert(std::is_constructible<bool, scoped_ptr<int>>::value  // explicit conversion
+                    && !std::is_convertible<scoped_ptr<int>,
+                                            bool>::value,  // implicit conversion
+                "scoped ptr should convertible to the bool, but not implicitly");
+
+  {
+    scoped_ptr<int> empty_ptr;
+
+    assert(!empty_ptr);
+    assert(empty_ptr.Get() == nullptr);
+  }
+
+  {
+    struct entity {
+      int f1;
+      std::string f2;
+    };
+
+    static_assert(std::is_same<scoped_ptr<entity>::element_type, entity>::value,
+                  "scoped ptr should contain element_type");
+
+    scoped_ptr<entity> const ptr{new entity{10, "hello"}};
+
+    assert(ptr->f1 == 10);
+    assert(ptr->f2 == "hello");
+
+    assert((*ptr).f1 == 10);
+    assert((*ptr).f2 == "hello");
+
+    assert(ptr.Get()->f1 == 10);
+    assert(ptr.Get()->f2 == "hello");
+  }
+
   {
     scoped_ptr<int> ptr{new int{10}};
     assert(*ptr == 10);
@@ -57,8 +90,17 @@ static void test_scoped_ptr() {
     assert(ptr.Get() == nullptr);
     assert(!ptr);
 
-    ptr.reset(new int{20});
+    ptr.Reset(new int{20});
     assert(*ptr == 20);
+  }
+
+  {
+    int *i = new int{10};
+    scoped_ptr<int> ptr{i};
+
+    assert(i == ptr.release());
+
+    delete i;
   }
 }
 
@@ -77,7 +119,7 @@ int main() {
  *Reset
  * Про конструкторы копирования и перемещения
  * typedef T element_type
- *
+ * Про reset
  *
  *
  * */

@@ -1,14 +1,6 @@
 #pragma once
 
 #include <iostream>
-
-// void assert(T a, T b) {
-//  if (a != b) {
-//    std::cout << "ERROR" << std::endl;
-//    exit(-1);
-//  }
-//}
-
 template<typename T>
 class scoped_ptr {
  private:
@@ -23,6 +15,8 @@ class scoped_ptr {
 
   scoped_ptr &operator=(const scoped_ptr &) = delete;
 
+  scoped_ptr(scoped_ptr &&x) = delete;
+
   T *Get() const {
     return ptr_;
   }
@@ -35,22 +29,19 @@ class scoped_ptr {
     return ptr_;
   }
 
-  void reset(T &p1 = NULL, T &p2 = NULL) {
-    if (p1 & p2) {
-      p2 = p1;
-    }
-    delete p1;
+  void Reset(T *p = NULL) {
+    delete ptr_;
+    ptr_ = p;
+    p = NULL;
+    delete p;
   }
 
-  T *release(T &ptr = NULL) {
-    if (ptr) {
-      auto a = ptr_;
-      ptr_ = NULL;
-      return a;
-    }
+  T *release(T *ptr = NULL) {
+    auto a = ptr_;
+    ptr_ = NULL;
+    return a;
   }
 
-  // TODO(Nariman):
   explicit operator bool() const {
     return ptr_ != NULL;
   }
