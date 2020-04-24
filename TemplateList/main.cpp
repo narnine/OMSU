@@ -1,30 +1,37 @@
-#include <iostream>
+#include "include/array_list.h"
+#include "include/linked_list.h"
 
-template <typename T> class ArrayList {
-private:
-  T *array_;
-  size_t capacity_;
-  size_t size_;
-  ArrayList(T *array, size_t capacity, size_t size)
-      : array_(array), capacity_(capacity), size_(size) {}
+using namespace std;
 
-public:
-  static ArrayList<T> of(std::initializer_list<T> elements) {
-    for (auto &element : elements) {
-    }
-  }
-
-  T &operator[](size_t index) {}
-
-  ~ArrayList() { std::cout << "~ScoredPtr" << std::endl; }
-};
-
-class LinkedList {};
+// class ArrayList;
+// template <typename T>
+// void Print(ArrayList<T> &list) {
+//  for (int i = 0; i < list.GetSize(); i++) {
+//    cout << list.array_[i] << " ";
+//  }
+//}
 
 int main() {
-  // ArrayList<int> list = {1,2};
+  ArrayList<int> list = {1, 2};
+  list.Print();
+  list.Append(3);
+
+  for (auto &element : list) {
+    cout << element << " ";
+  }
+
+  for (auto el = list.begin(); el != list.end(); el++) {
+    cout << el << " ";
+  }
+  ArrayList<int> list_two = {1, 2, 3, 4};
+
   return 0;
 }
 /*Questions
  *про конструктор: как он должен выглядеть, иногда мы пишем через :
+ *Конструктор копирования, оба объекта указывают на 1 массив или на 2
+ * Если придет не пустой массив в конструктор копирования
+ * Что лучше сначала увеличивать index, а потом вставлять или наоборот?
+ * Chat
+ * Coding Garden
  * */

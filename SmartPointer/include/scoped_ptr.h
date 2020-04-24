@@ -29,11 +29,11 @@ class scoped_ptr {
     return ptr_;
   }
 
-  void Reset(T *p = NULL) {
+  void Reset(T *other = NULL) {
     delete ptr_;
-    ptr_ = p;
-    p = NULL;
-    delete p;
+    ptr_ = other;
+    other = NULL;
+    delete other;
   }
 
   T *release(T *ptr = NULL) {

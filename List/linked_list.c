@@ -81,12 +81,25 @@ void Prepend(List *this, int value) {
   }
 }
 
-void AppendAll(List *this, List *that) {
-  this->tail->next = that->head;
-  this->tail = that->tail;
-  that->head = NULL;
-  that->tail = NULL;
-  DestroyList(that);
+void AppendAll(List *this, const List *that) {
+  Node *ptr = (Node *)malloc(sizeof(Node));
+  int value = that->head->value;
+  struct Node_ next = *(that->head->next);
+  ptr->value = value;
+  ptr->next = &next;
+  while (ptr != NULL) {
+    Node *new_node = (Node *)malloc(sizeof(Node));
+    new_node->value = ptr->value;
+    new_node->next = ptr->next;
+    (this->tail)->next = new_node;
+    this->tail = new_node;
+    ptr = ptr->next;
+  }
+  free(ptr);
+  //  this->tail->next = that->head;
+  //  this->tail = that->tail;
+  //  that->head = NULL;
+  //  that->tail = NULL;
 }
 
 void InsertAt(List *this, int index, int value) {

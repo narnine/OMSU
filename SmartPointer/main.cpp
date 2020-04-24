@@ -2,9 +2,10 @@
 #include <iostream>
 
 #include "include/scoped_ptr.h"
+#include "include/shared_ptr.h"
 #include "string"
 using namespace std;
-// void test_0() {
+// void test_scoped() {
 //  scoped_ptr<int> scopedptr(new int(5));
 //  int *a = scopedptr.Get();
 //  assert(*a, 5);
@@ -18,6 +19,10 @@ struct foo {
   int field1;
   int field2;
 };
+
+void test_shared(){
+  
+}
 
 void bar() {
   scoped_ptr<foo> foo_ptr(new foo{0, 111});
@@ -105,7 +110,8 @@ static void test_scoped_ptr() {
 }
 
 int main() {
-  //  test_0();
+  //  test_scoped();
+  test_shared();
   //  bar();
   test_scoped_ptr();
   return 0;

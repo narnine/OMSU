@@ -34,6 +34,8 @@ void MicroMemory(List *this) {
 
   free(this->array);
   this->array = arr;
+  arr = NULL;
+  free(arr);
 }
 
 void AllocMemory(List *this) {
@@ -47,6 +49,8 @@ void AllocMemory(List *this) {
 
   free(this->array);
   this->array = arr;
+  arr = NULL;
+  free(arr);
 }
 
 List *NewList() {

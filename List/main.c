@@ -16,44 +16,48 @@ int main() {
   Append(list, 1);
   AssertEq(1, Length(list), "empty list length should be zero");
 
-  Append(list, 0);
+  Append(list, 2);
   AssertEq(2, Length(list), "empty list length should be zero");
-  Printf(list);
+  //  Printf(list);
 
-  Prepend(list, 2);
+  Prepend(list, 0);
   AssertEq(3, Length(list), "empty list length should be zero");
-  Printf(list);
+  //  Printf(list);
 
-  Prepend(list_two, 4);
-  Prepend(list_two, 3);
-  Prepend(list_two, 5);
+  Prepend(list_two, 2);
+  Append(list_two, 3);
+  Append(list_two, 4);
+  Append(list_two, 4);
+  Printf(list);
+  Printf(list_two);
   AppendAll(list, list_two);
+  Printf(list);
   DestroyList(list_two);
   Printf(list);
   Printf(list_two);
-  //AssertEq(3, GetAt(list, 3), "empty list length should be zero");
-
-  InsertAt(list, 1, -1);
-  Printf(list);
-
-  RemoveAt(list, 2);
-  Printf(list);
+  // AssertEq(3, GetAt(list, 3), "empty list length should be zero");
+  //
+  //  InsertAt(list, 1, -1);
+  //  Printf(list);
+  //
+  //  RemoveAt(list, 2);
+  //  Printf(list);
 
   // Printf(list_two);
   // RemoveAll(list_two);
   // AssertEq(0, Length(list_two), "empty list length should be zero");
   // Printf(list_two);
-
-  Pop(list);
-  AssertEq(5, Length(list), "empty list length should be zero");
-  Printf(list);
-
-  AssertEq(0, Length(list_two), "empty list length should be zero");
-  Printf(list_two);
-
-  Printf(list);
-  Dequeue(list);
-  Printf(list);
+  //
+  //  Pop(list);
+  //  AssertEq(5, Length(list), "empty list length should be zero");
+  //  Printf(list);
+  //
+  //  AssertEq(0, Length(list_two), "empty list length should be zero");
+  //  Printf(list_two);
+  //
+  //  Printf(list);
+  //  Dequeue(list);
+  //  Printf(list);
   //  AssertEq(1, Length(list), "Length([42]) should be 1");
   //  AssertEq(42, GetAt(list, 0), "GetAt([42], 0) should be 42");
   //
