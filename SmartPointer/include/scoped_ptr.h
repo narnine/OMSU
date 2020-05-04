@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+
 template<typename T>
 class scoped_ptr {
  private:
@@ -29,11 +30,10 @@ class scoped_ptr {
     return ptr_;
   }
 
+
   void Reset(T *other = NULL) {
     delete ptr_;
     ptr_ = other;
-    other = NULL;
-    delete other;
   }
 
   T *release(T *ptr = NULL) {

@@ -20,49 +20,40 @@ struct foo {
   int field2;
 };
 
-void test_shared(){
-  
-}
+// void test_shared() {
+//  shared_ptr<foo> foo_shptr(new foo{888, 999});
+//  shared_ptr<foo> foo_shptr2 = foo_shptr;
+//  assert(foo_shptr.get() == foo_shptr2.get());
+//  std::cout << foo_shptr->field1 << " " << foo_shptr2->field1 << std::endl;
 
-void bar() {
-  scoped_ptr<foo> foo_ptr(new foo{0, 111});
-  std::cout << (*foo_ptr).field1 << foo_ptr->field1 << foo_ptr.Get() << std::endl;
+// плохое использование
+// приводи к двойному удалению, так как теперь два умных указателя
+// "владеют" одним обхектом, не зная друг о друге
+//  shared_ptr<foo> foo_shptr3(foo_shptr2.get());
+/**
+Тут выпадет segfault:
 
-  if (foo_ptr) foo_ptr->field1 += 1;
+smart_pointer_2(2642,0x1180fddc0) malloc: *** error for object 0x7fe322504080: pointer being freed was not allocated
+smart_pointer_2(2642,0x1180fddc0) malloc: *** set a breakpoint in malloc_error_break to debug
+**/
+// }
 
-  cout << foo_ptr.Get() << endl;
-  cout << foo_ptr->field1 << endl;
-
-  //  foo_ptr = std::move(foo_ptr);  // - compilation fails
-  //  auto foo_ptr2(foo_ptr);        // - compilation fails
-  //  foo_ptr = foo_ptr;             // - compilation fails
-  // bool status = foo_ptr;        // - compilation fails
-}  //  foo_ptr уничтожен. Оператор delete вызван автоматически.
-
-static void test_scoped_ptr() {
-  static_assert(!std::is_convertible<int *, scoped_ptr<int>>::value,
-                "scoped ptr should not have implicit constructor from pointer!");
-
-  static_assert(!std::is_copy_constructible<scoped_ptr<int>>::value, "scoped ptr should not be copiable");
-
-  static_assert(!std::is_move_constructible<scoped_ptr<int>>::value, "scoped ptr should not be movable");
-
-  static_assert(!std::is_copy_assignable<scoped_ptr<int>>::value, "scoped ptr should not be copiable by operator=");
-
-  static_assert(!std::is_move_assignable<scoped_ptr<int>>::value, "scoped ptr should not be movable by operator=");
-
-  static_assert(std::is_same<scoped_ptr<int>::element_type, int>::value, "scoped ptr should contain element_type");
-
-  static_assert(std::is_constructible<bool, scoped_ptr<int>>::value  // explicit conversion
-                    && !std::is_convertible<scoped_ptr<int>,
-                                            bool>::value,  // implicit conversion
-                "scoped ptr should convertible to the bool, but not implicitly");
+static void test_shared_ptr() {
+  //  static_assert(!std::is_convertible<int *, shared_ptr<int>>::value,
+  //                "shared ptr should not have implicit constructor from pointer!");
+  //
+  //  static_assert(std::is_same<shared_ptr<int>::element_type, int>::value, "shared ptr should contain element_type");
+  //
+  //  static_assert(std::is_constructible<bool, shared_ptr<int>>::value  // explicit conversion
+  //                    && !std::is_convertible<shared_ptr<int>,
+  //                                            bool>::value,  // implicit conversion
+  //                "shared ptr should convertible to the bool, but not implicitly");
 
   {
-    scoped_ptr<int> empty_ptr;
+    shared_ptr<int> empty_ptr;
 
     assert(!empty_ptr);
-    assert(empty_ptr.Get() == nullptr);
+    assert(empty_ptr.get() == nullptr);
   }
 
   {
@@ -71,10 +62,10 @@ static void test_scoped_ptr() {
       std::string f2;
     };
 
-    static_assert(std::is_same<scoped_ptr<entity>::element_type, entity>::value,
-                  "scoped ptr should contain element_type");
+    //  static_assert(std::is_same<shared_ptr<entity>::element_type, entity>::value,
+    //  "shared ptr should contain element_type");
 
-    scoped_ptr<entity> const ptr{new entity{10, "hello"}};
+    shared_ptr<entity> const ptr{new entity{10, "hello"}};
 
     assert(ptr->f1 == 10);
     assert(ptr->f2 == "hello");
@@ -82,50 +73,117 @@ static void test_scoped_ptr() {
     assert((*ptr).f1 == 10);
     assert((*ptr).f2 == "hello");
 
-    assert(ptr.Get()->f1 == 10);
-    assert(ptr.Get()->f2 == "hello");
+    // TODO(Nariman): Почему равны мы же передаем адресс
+    assert(ptr.get()->f1 == 10);
+    assert(ptr.get()->f2 == "hello");
   }
 
   {
-    scoped_ptr<int> ptr{new int{10}};
+    shared_ptr<int> ptr{new int{10}};
     assert(*ptr == 10);
     assert(ptr);
 
-    ptr.Reset();
-    assert(ptr.Get() == nullptr);
+    ptr.reset();
+    assert(ptr.get() == nullptr);
     assert(!ptr);
 
-    ptr.Reset(new int{20});
+    ptr.reset(new int{20});
     assert(*ptr == 20);
   }
 
   {
-    int *i = new int{10};
-    scoped_ptr<int> ptr{i};
+    shared_ptr<int> ptr{new int{10}};
 
-    assert(i == ptr.release());
+    ptr = static_cast<shared_ptr<int> const &>(ptr);
 
-    delete i;
+    {
+      shared_ptr<int> other{ptr};
+
+      assert(other.get() == ptr.get());
+      //  assert(&(*other) == &(*ptr));
+    }
+
+    {
+      shared_ptr<int> other;
+
+      other = ptr;
+
+      assert(other.get() == ptr.get());
+      //  assert(&(*other) == &(*ptr));
+    }
+  }
+
+  {
+    shared_ptr<int> first{new int{10}};
+    shared_ptr<int> second{first};
+
+    first.reset();
+    // TODO(Nariman): Почему?
+    assert(first.get() != second.get());
+
+    first = second;
+    assert(first.get() == second.get());
+
+    second.reset(new int{20});
+    assert(first.get() != second.get());
+
+    second = first;
+    assert(first.get() == second.get());
+  }
+
+  {
+    struct A {
+      int *a_;
+      explicit A(int *a) : a_(a) {}
+      virtual ~A() {
+        *a_ = 0;
+      }
+    };
+
+    int trigger = 42;
+    {
+      shared_ptr<A> first{new A{&trigger}};
+      auto second = first;
+      auto third = second;
+      auto fourth = third;
+      auto fifth = second;
+
+      assert(first.get() == first.get());
+      assert(*first->a_ == 42);
+      assert(*fifth->a_ == 42);
+    }
+    //  assert(trigger == 0);
   }
 }
 
+// void bar() {
+//  scoped_ptr<foo> foo_ptr(new foo{0, 111});
+//  std::cout << (*foo_ptr).field1 << foo_ptr->field1 << foo_ptr.Get() << std::endl;
+//
+//  if (foo_ptr) foo_ptr->field1 += 1;
+//
+//  cout << foo_ptr.Get() << endl;
+//  cout << foo_ptr->field1 << endl;
+
+//  foo_ptr = std::move(foo_ptr);  // - compilation fails
+//  auto foo_ptr2(foo_ptr);        // - compilation fails
+//  foo_ptr = foo_ptr;             // - compilation fails
+// bool status = foo_ptr;        // - compilation fails
+//  }  //  foo_ptr уничтожен. Оператор delete вызван автоматически.
+
 int main() {
   //  test_scoped();
-  test_shared();
   //  bar();
-  test_scoped_ptr();
+  // test_shared();
+  //  test_scoped_ptr();
+  test_shared_ptr();
   return 0;
 }
 
 /*Questions:
- *  T& operator*() const { *ptr_; } почему возращать именно ссылку, а не
- * указатель например
- * Почему не пишем this
- * Почему -> возращает значение, а Get адресс
- *Reset
- * Про конструкторы копирования и перемещения
- * typedef T element_type
- * Про reset
+ * Почему realese не имеет смысла
+ * T& operator*() const { *ptr_; } почему возращать именно ссылку, а не
+ *Если придет пустой указатель, count должен быть равен 0
  *
  *
  * */

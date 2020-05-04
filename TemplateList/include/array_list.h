@@ -1,12 +1,13 @@
 #pragma once
 #include "iterator"
+#include <bits/unique_ptr.h>
 #include <iostream>
 
 template <typename T> class ArrayList {
 private:
-  T *array_;
-  size_t capacity_;
-  size_t length_;
+  T *array_ = nullptr;
+  size_t capacity_ = 2;
+  size_t length_ = -1;
 
   void AllocMemory() {
     if (capacity_ == 0) {
@@ -27,12 +28,16 @@ private:
   }
 
 public:
-  explicit ArrayList(size_t capacity = 0) : capacity_(capacity), length_(-1) {
-    if (capacity_ == 0) {
-      array_ = NULL;
+  explicit ArrayList(size_t capacity = 2) : capacity_(capacity), length_(-1) {
+    if (capacity_ <= 2) {
+      capacity_ = 2;
     } else {
       array_ = new T[capacity_];
     }
+  }
+
+  void Enqueue(T &&object) {
+    array_[length_] = new (&object) T[sizeof(object)];
   }
 
   ArrayList<T>(std::initializer_list<T> elements) {
@@ -41,14 +46,11 @@ public:
     array_ = new T[capacity_];
     for (auto &element : elements) {
       length_++;
-      array_[length_] = element;
+      Enqueue(element);
     }
   }
 
   ArrayList<T>(const ArrayList<T> &other) {
-    if (length_ != -1) {
-      delete array_;
-    }
     capacity_ = other.capacity_;
     length_ = other.length_;
     array_ = new T[capacity_];
@@ -56,17 +58,20 @@ public:
       array_[i] = other.array_[i];
     }
   }
-
+  // TODO(Nariman): constructive copy and =
   ArrayList<T> &operator=(const ArrayList<T> &other) {
-    if (length_ != -1) {
-      delete array_;
+    if (this != &other) {
+      if (length_ != -1) {
+        delete array_;
+      }
+      capacity_ = other.capacity_;
+      length_ = other.length_;
+      array_ = new T[capacity_];
+      for (int i = 0; i < length_ + 1; i++) {
+        array_[i] = other.array_[i];
+      }
     }
-    capacity_ = other.capacity_;
-    length_ = other.length_;
-    array_ = new T[capacity_];
-    for (int i = 0; i < length_ + 1; i++) {
-      array_[i] = other.array_[i];
-    }
+    return *this;
   }
 
   void DestroyList() {
@@ -173,7 +178,7 @@ public:
     return x;
   }
 
-  int GetLength() { return length_; }
+  int GetLength() { return length_ + 1; }
   int GetCapacity() { return capacity_; }
 
   void SetSize(int new_size) { length_ = new_size; }
