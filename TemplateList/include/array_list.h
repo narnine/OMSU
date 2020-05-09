@@ -1,52 +1,67 @@
 #pragma once
+#include "cassert"
 #include "iterator"
 #include <bits/unique_ptr.h>
 #include <iostream>
 
 template <typename T> class ArrayList {
 private:
-  T *array_ = nullptr;
-  size_t capacity_ = 2;
+  T *array_{};
+  size_t capacity_ = 0;
   size_t length_ = -1;
 
-  void AllocMemory() {
-    if (capacity_ == 0) {
-      capacity_ = 1;
+  void ReallocateAndMove(int capacity) {
+    capacity_ = capacity;
+    auto new_buf = static_cast<T *>(::operator new(sizeof(T) * capacity_));
+
+    for (int i = 0; i < length_ + 1; i++) {
+      ::new (new_buf + i)
+          T(std::move(array_[i])); // TODO(Nariman): Move сразу удаляет из
+                                   // памяти объект сам?
+      array_[i].~T(); // old object "wrapper" should be deleted
     }
 
-    capacity_ *= 2;
+    ::operator delete(array_);
+    array_ = new_buf; // TODO(Nariman): нужно ли удали new_buf?
+  }
 
-    ArrayList<T> new_list(capacity_);
+  void AllocateMemory() {
+    if (length_ + 1 < capacity_)
+      return;
+    if (capacity_ == 0)
+      capacity_ = 1; // edge case when empty array_
 
-    for (int i = 0; i < length_; i++) {
-      new_list.array_[i] = array_[i];
-    }
-    free(array_);
-    array_ = new_list.array_;
-    new_list.array_ = NULL;
-    free(new_list.array_);
+    // Mem growth: 0 2 4 8 16 ...
+    // read more about how to allocate memory for vector or ArrayList
+    ReallocateAndMove(capacity_ * 2);
   }
 
 public:
   explicit ArrayList(size_t capacity = 2) : capacity_(capacity), length_(-1) {
-    if (capacity_ <= 2) {
+    if (capacity_ < 2) {
       capacity_ = 2;
-    } else {
-      array_ = new T[capacity_];
     }
+    array_ = static_cast<T *>(::operator new(sizeof(T) * capacity_));
   }
 
-  void Enqueue(T &&object) {
-    array_[length_] = new (&object) T[sizeof(object)];
-  }
-
-  ArrayList<T>(std::initializer_list<T> elements) {
+  ArrayList<T>(std::initializer_list<T> &elements) {
     length_ = -1;
     capacity_ = elements.size() * 2;
     array_ = new T[capacity_];
     for (auto &element : elements) {
       length_++;
-      Enqueue(element);
+      array_[length_] = element;
+    }
+  }
+
+  // TODO(Nariman): HOW
+  ArrayList<T>(std::initializer_list<T> &&elements) {
+    length_ = -1;
+    capacity_ = elements.size() * 2;
+    array_ = static_cast<T *>(::operator new(sizeof(T) * capacity_));
+    for (auto &element : elements) {
+      length_++;
+      ::new (array_ + length_) T(std::move(element));
     }
   }
 
@@ -77,22 +92,25 @@ public:
   void DestroyList() {
     capacity_ = 0;
     length_ = -1;
-    free(array_);
+    ::operator delete(array_);
+    array_ = nullptr;
   }
 
-  void Append(T value) {
+  void Append(const T &value) {
     length_++;
-    if (capacity_ == 0 || capacity_ <= length_ + 1) {
-      AllocMemory();
-    }
-    array_[length_] = value;
+    AllocateMemory();
+    ::new (array_ + length_) T(value);
   }
 
-  void Prepend(T value) {
+  void Append(T &&value) {
     length_++;
-    if (capacity_ == 0 || capacity_ <= length_ + 1) {
-      AllocMemory();
-    }
+    AllocateMemory();
+    ::new (array_ + length_) T(std::move(value));
+  }
+  // TODO(Nariman): все падоло когда передавали const T value
+  void Prepend(const T &value) {
+    length_++;
+    AllocateMemory();
     if (length_ != 0) {
       for (int i = length_; i > 0; i--) {
         array_[i] = array_[i - 1];
@@ -101,33 +119,56 @@ public:
     array_[0] = value;
   }
 
-  void AppendAll(const ArrayList<T> &that) {
-    if (length_ + that.GetLength() + 2 >= capacity_) {
-      AllocMemory();
+  void Prepend(T &&value) {
+    length_++;
+    AllocateMemory();
+    if (length_ != 0) {
+      for (int i = length_; i > 0; i--) {
+        ::new (array_ + i) T(std::move(array_[i - 1]));
+      }
     }
-    for (int i = 0; i < that->size; i++) {
+    ::new (array_ + 0) T(std::move(value));
+  }
+
+  // TODO(Nariman): HOW
+  void AppendAll(const ArrayList<T> &that) {
+    AllocateMemory();
+    for (int i = 0; i < that.length_ + 1; i++) {
       length_++;
-      array_[length_] = that.array_[i];
+      ::new (array_ + length_) T(std::move(that.array_ + i));
     }
   }
 
-  void InsertAt(int index, T value) {
+  void InsertAt(int index, const T &value) {
     length_ += 1;
     if (index < 0) {
       std::cout << "ERROR: INDEX CAN NOT BE NEGATIVE NUMBER" << std::endl;
       exit(-1);
     }
     if (capacity_ == 0 || capacity_ <= length_ + 1) {
-      AllocMemory();
+      AllocateMemory();
     }
-    for (int i = length_; i > index; i--) {
+    for (int i = length_; i > index + 1; i--) {
       array_[i] = array_[i - 1];
     }
     array_[index + 1] = value;
   }
 
+  void InsertAt(int index, T &&value) {
+    length_ += 1;
+    if (index < 0) {
+      std::cout << "ERROR: INDEX CAN NOT BE NEGATIVE NUMBER" << std::endl;
+      exit(-1);
+    }
+    AllocateMemory();
+    for (int i = length_; i > index + 1; i--) {
+      ::new (array_ + i) T(std::move(array_[i - 1]));
+    }
+    ::new (array_ + index + 1) T(std::move(value));
+  }
+
   void RemoveAt(int index) {
-    length_ -= 1;
+    length_--;
     if (index < 0) {
       std::cout << "ERROR: INDEX CAN NOT BE NEGATIVE NUMBER" << std::endl;
       exit(-1);
@@ -137,10 +178,10 @@ public:
       exit(-1);
     }
     for (int i = index; i < length_ + 1; i++) {
-      array_[i] = array_[i + 1];
+      array_[i].~T(); // TODO(Nariman) : мы чистим умный указаетль
+      ::new (array_ + i) T(std::move(array_[i + 1]));
     }
     if (capacity_ >= (length_ + 1) * 4) {
-      //  MicroMemory();
     }
   }
 
@@ -151,30 +192,25 @@ public:
   }
 
   T Pop() {
-    T x = array_[length_];
-    array_[length_] = 0;
+    T x = T(std::move(array_[length_]));
+    array_[length_].~T();
+    length_--;
 
-    length_ -= 1;
-    if (capacity_ >= (length_ + 1) * 4) {
-      // MicroMemory();
-    }
-
+    // MicroMemory();
     return x;
   }
 
   T Dequeue() {
-    T x = array_[0];
-    array_[0] = 0;
+    T x = T(std::move(array_[0]));
+    array_[0].~T();
 
-    length_ -= 1;
+    length_--;
 
     for (int i = 0; i < length_ + 1; i++) {
-      array_[i] = array_[i + 1];
+      ::new (array_ + i) T(std::move(array_[i + 1]));
     }
 
-    if (capacity_ >= (length_ + 1) * 4) {
-      //  MicroMemory();
-    }
+    //  MicroMemory();
     return x;
   }
 
@@ -184,6 +220,12 @@ public:
   void SetSize(int new_size) { length_ = new_size; }
   void SetCapacity(int new_capacity) { capacity_ = new_capacity; }
 
+  const T &At(int index) const {
+    assert(index >= 0 && index < length_ + 1);
+    return array_[index];
+  }
+
+  // TODO(Nariman): работу с некопируемыми типами
   void Print() {
     for (int i = 0; i < GetLength() + 1; i++) {
       std::cout << array_[i] << " ";
@@ -199,7 +241,14 @@ public:
   T *end() { return array_ + length_ + 1; };
 
   ~ArrayList() {
-    std::cout << "~ScoredPtr" << std::endl;
-    delete array_;
+    std::cout << "~ArrayList" << std::endl;
+    for (int i = 0; i < length_; i++) {
+      array_[i].~T();
+    }
+
+    ::operator delete(array_);
+    array_ = nullptr;
+    capacity_ = 0;
+    length_ = 0;
   }
 };

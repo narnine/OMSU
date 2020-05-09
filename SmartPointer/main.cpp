@@ -20,34 +20,34 @@ struct foo {
   int field2;
 };
 
-// void test_shared() {
-//  shared_ptr<foo> foo_shptr(new foo{888, 999});
-//  shared_ptr<foo> foo_shptr2 = foo_shptr;
-//  assert(foo_shptr.get() == foo_shptr2.get());
-//  std::cout << foo_shptr->field1 << " " << foo_shptr2->field1 << std::endl;
+void test_shared() {
+  shared_ptr<foo> foo_shptr(new foo{888, 999});
+  shared_ptr<foo> foo_shptr2 = foo_shptr;
+  assert(foo_shptr.get() == foo_shptr2.get());
+  std::cout << foo_shptr->field1 << " " << foo_shptr2->field1 << std::endl;
 
-// плохое использование
-// приводи к двойному удалению, так как теперь два умных указателя
-// "владеют" одним обхектом, не зная друг о друге
-//  shared_ptr<foo> foo_shptr3(foo_shptr2.get());
-/**
-Тут выпадет segfault:
+  // плохое использование
+  // приводи к двойному удалению, так как теперь два умных указателя
+  // "владеют" одним обхектом, не зная друг о друге
+  shared_ptr<foo> foo_shptr3(foo_shptr2.get());
+  /**
+  Тут выпадет segfault:
 
-smart_pointer_2(2642,0x1180fddc0) malloc: *** error for object 0x7fe322504080: pointer being freed was not allocated
-smart_pointer_2(2642,0x1180fddc0) malloc: *** set a breakpoint in malloc_error_break to debug
-**/
-// }
+  smart_pointer_2(2642,0x1180fddc0) malloc: *** error for object 0x7fe322504080: pointer being freed was not allocated
+  smart_pointer_2(2642,0x1180fddc0) malloc: *** set a breakpoint in malloc_error_break to debug
+  **/
+}
 
 static void test_shared_ptr() {
-  //  static_assert(!std::is_convertible<int *, shared_ptr<int>>::value,
-  //                "shared ptr should not have implicit constructor from pointer!");
-  //
-  //  static_assert(std::is_same<shared_ptr<int>::element_type, int>::value, "shared ptr should contain element_type");
-  //
-  //  static_assert(std::is_constructible<bool, shared_ptr<int>>::value  // explicit conversion
-  //                    && !std::is_convertible<shared_ptr<int>,
-  //                                            bool>::value,  // implicit conversion
-  //                "shared ptr should convertible to the bool, but not implicitly");
+  static_assert(!std::is_convertible<int *, shared_ptr<int>>::value,
+                "shared ptr should not have implicit constructor from pointer!");
+
+  static_assert(std::is_same<shared_ptr<int>::element_type, int>::value, "shared ptr should contain element_type");
+
+  static_assert(std::is_constructible<bool, shared_ptr<int>>::value  // explicit conversion
+                    && !std::is_convertible<shared_ptr<int>,
+                                            bool>::value,  // implicit conversion
+                "shared ptr should convertible to the bool, but not implicitly");
 
   {
     shared_ptr<int> empty_ptr;
@@ -62,8 +62,8 @@ static void test_shared_ptr() {
       std::string f2;
     };
 
-    //  static_assert(std::is_same<shared_ptr<entity>::element_type, entity>::value,
-    //  "shared ptr should contain element_type");
+    static_assert(std::is_same<shared_ptr<entity>::element_type, entity>::value,
+                  "shared ptr should contain element_type");
 
     shared_ptr<entity> const ptr{new entity{10, "hello"}};
 
@@ -100,7 +100,7 @@ static void test_shared_ptr() {
       shared_ptr<int> other{ptr};
 
       assert(other.get() == ptr.get());
-      //  assert(&(*other) == &(*ptr));
+      assert(&(*other) == &(*ptr));
     }
 
     {
@@ -109,7 +109,7 @@ static void test_shared_ptr() {
       other = ptr;
 
       assert(other.get() == ptr.get());
-      //  assert(&(*other) == &(*ptr));
+      assert(&(*other) == &(*ptr));
     }
   }
 
@@ -152,7 +152,7 @@ static void test_shared_ptr() {
       assert(*first->a_ == 42);
       assert(*fifth->a_ == 42);
     }
-    //  assert(trigger == 0);
+    assert(trigger == 0);
   }
 }
 
@@ -174,7 +174,7 @@ static void test_shared_ptr() {
 int main() {
   //  test_scoped();
   //  bar();
-  // test_shared();
+  test_shared();
   //  test_scoped_ptr();
   test_shared_ptr();
   return 0;

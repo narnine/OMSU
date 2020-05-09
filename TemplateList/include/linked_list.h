@@ -25,6 +25,36 @@ public:
 
   LinkedList<T> &operator=(const LinkedList<T>) = delete;
 
+  class iterator {
+    Node<T> *node_ = nullptr;
+
+  public:
+    typedef T value_type;
+    typedef std::forward_iterator_tag iterator_category;
+    typedef int difference_type;
+
+    // конструктор
+    explicit iterator(Node<T> *node) : node_(node) {}
+
+    //++a
+    iterator &operator++() {
+      node_ = node_->next_;
+      return *this;
+    }
+
+    // a++
+    iterator operator++(int junk) {
+      iterator res = *this;
+      ++(*this);
+      return res;
+    }
+
+    T &operator*() { return node_->value_; }
+    T *operator->() { &(node_->value_); }
+    bool operator==(const iterator &rhs) { return (node_ == rhs.node_); }
+    bool operator!=(const iterator &rhs) { return (node_ != rhs.node_); }
+  };
+
   void Printf() {
     Node<T> *ptr = head_;
 
@@ -83,8 +113,8 @@ public:
     }
   }
 
-  void AppendAll(const LinkedList<T> *that) {
-    Node<T> *node = that->head_;
+  void AppendAll(const LinkedList<T> &that) {
+    Node<T> *node = that.head_;
     while (node != nullptr) {
       Append(node->value_);
       node = node->next_;
@@ -172,8 +202,8 @@ public:
     return tmp->value_;
   }
 
-  T *begin() { return head_; }
-  T *end() { return tail_; }
+  iterator begin() { return iterator(head_); }
+  iterator end() { return iterator(tail_->next_); }
 
   //  T &operator++(T*)
 

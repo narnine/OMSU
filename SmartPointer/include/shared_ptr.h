@@ -18,7 +18,7 @@ class shared_ptr {
 
   shared_ptr& operator=(const shared_ptr& sharedptr) {
     if (this != &sharedptr) {
-      *count_ --;
+      *count_--;
       ptr_ = sharedptr.ptr_;
       count_ = sharedptr.count_;
       *count_++;
@@ -34,13 +34,13 @@ class shared_ptr {
     return ptr_;
   }
 
-  T operator*() const {
+  T& operator*() const {
     return *ptr_;
   }
 
-//  T operator&() const {
-//    return ptr_;
-//  }
+  //  T operator&() const {
+  //    return ptr_;
+  //  }
 
   void reset(T* other = nullptr) {
     ptr_ = NULL;
@@ -53,14 +53,13 @@ class shared_ptr {
   }
 
   virtual ~shared_ptr() {
-    std::cout << "~sharedptr" << std::endl;
-    if (count_ == 0) {
+    (*count_)--;
+    if (*count_ == 0) {
+      std::cout << "~sharedptr" << std::endl;
       delete ptr_;
       delete count_;
     } else {
       ptr_ = NULL;
-      delete ptr_;
-      *count_ -= 1;
     }
   }
 };
