@@ -1,19 +1,25 @@
-//  #include "include/array_list.h"
-#include "cassert"
-#include "include/linked_list.h"
+#include "../include/array_list.h"
+#include <gtest/gtest.h>
+//  #include "../include/linked_list.h"
 #include "vector"
 #include <bits/unique_ptr.h>
-#include <iostream>
+
 
 using namespace std;
 
-static void AssertEq(int expected, int actual, const char *msg) {
-  if (expected != actual) {
-    cout << "Test failed: %s\n expected %d but got %d\n"
-         << ", " << msg << ", " << expected << ", " << actual << endl;
-    exit(-1);
-  }
+// static void AssertEq(int expected, int actual, const char *msg) {
+//  if (expected != actual) {
+//    cout << "Test failed: %s\n expected %d but got %d\n"
+//         << ", " << msg << ", " << expected << ", " << actual << endl;
+//    exit(-1);
+//  }
+//}
+
+TEST(ArrayList, arraylist_just_create_arr_Test) {
+  ArrayList<std::unique_ptr<int>> arrayList;
+
 }
+
 //
 // void test_questions() {
 //  ArrayList<std::unique_ptr<int>> arrayList;
@@ -68,7 +74,16 @@ static void AssertEq(int expected, int actual, const char *msg) {
 //  {std::make_unique<int>(100)};
 //}
 
-void test_with_unique_linked_list() {}
+// void test_with_unique_linked_list() {
+//  LinkedList<std::unique_ptr<int>> linkedList;
+//  linkedList.Append(std::make_unique<int>(4));
+//  assert(*linkedList[0] == 4);
+//  linkedList.Append(std::make_unique<int>(0));
+//  linkedList.Append(std::make_unique<int>(2));
+//  linkedList.Append(std::make_unique<int>(4));
+//  linkedList.Append(std::make_unique<int>(8));
+//  assert(*linkedList.Pop() == 8);
+//}
 
 //  void test_array_list() {
 //  ArrayList<int> list = {1, 2};
@@ -136,25 +151,23 @@ void test_with_unique_linked_list() {}
 //  list.Printf();
 //}
 //
-int main() {
-  //  test_array_list();
-  //  test_linked_list();
-  test_with_unique_array_list();
-  //
-  //    Prepend(list_two, 2);
-  //    Append(list_two, 3);
-  //    Append(list_two, 4);
-  //    Append(list_two, 4);
-  //    Printf(list);
-  //    Printf(list_two);
-  //    AppendAll(list, list_two);
-  //    Printf(list);
-  //    DestroyList(list_two);
-  //    Printf(list);
-  //    Printf(list_two);
 
-  return 0;
-}
+//  test_array_list();
+//  test_linked_list();
+//  test_with_unique_array_list();
+//
+//    Prepend(list_two, 2);
+//    Append(list_two, 3);
+//    Append(list_two, 4);
+//    Append(list_two, 4);
+//    Printf(list);
+//    Printf(list_two);
+//    AppendAll(list, list_two);
+//    Printf(list);
+//    DestroyList(list_two);
+//    Printf(list);
+//    Printf(list_two);
+
 /*Questions
  * Как сделать range based for
  * Почему написанно деструкторы

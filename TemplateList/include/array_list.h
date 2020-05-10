@@ -8,7 +8,7 @@ template <typename T> class ArrayList {
 private:
   T *array_{};
   size_t capacity_ = 0;
-  size_t length_ = -1;
+  int length_ = -1;
 
   void ReallocateAndMove(int capacity) {
     capacity_ = capacity;
@@ -249,6 +249,6 @@ public:
     ::operator delete(array_);
     array_ = nullptr;
     capacity_ = 0;
-    length_ = 0;
+    length_ = -1;
   }
 };

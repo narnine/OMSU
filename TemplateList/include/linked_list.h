@@ -1,4 +1,5 @@
 #pragma once
+#include <bits/unique_ptr.h>
 #include <cstdlib>
 #include <initializer_list>
 #include <iostream>
@@ -68,9 +69,23 @@ public:
     std::cout << std::endl;
   }
 
-  void Append(int value) {
+  void Append(const T &value) {
     Node<T> *new_node = new Node<T>;
     new_node->value_ = value;
+    new_node->next_ = nullptr;
+    if (head_ == nullptr) {
+      head_ = new_node;
+    } else {
+      tail_->next_ = new_node;
+    }
+    tail_ = new_node;
+  }
+
+
+  // TODO(Nariman): подумать куда выделять память, скорее тут связанно с iterator
+  void Append(const T &&value) {
+    Node<T> *new_node = new Node<T>;
+    ::new (new_node) T(std::move(value));
     new_node->next_ = nullptr;
     if (head_ == nullptr) {
       head_ = new_node;
@@ -157,7 +172,7 @@ public:
       ptr = ptr->next;
     }
 
-    int a = tail_->value;
+    T a = T(std::move(tail_->value_));
     delete tail_;
     ptr->next_ = nullptr;
     tail_ = ptr; /*Выделять памяять занова для this->tail?*/
