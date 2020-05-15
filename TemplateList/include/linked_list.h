@@ -3,6 +3,8 @@
 #include <cstdlib>
 #include <initializer_list>
 #include <iostream>
+
+namespace linkedlist {
 template <typename T> struct Node {
   T value_;
   struct Node *next_;
@@ -17,11 +19,18 @@ public:
   explicit LinkedList(Node<T> *head = nullptr, Node<T> *tail = nullptr)
       : head_(head), tail_(tail) {}
 
-  LinkedList<T>(std::initializer_list<T> elements) {
+  LinkedList<T>(std::initializer_list<T> &elements) {
     for (auto &element : elements) {
-      Append(element);
+      // Append(element);
     }
   }
+
+  // TODO(Nariman) : How
+  LinkedList<T>(std::initializer_list<T> &&elements) {
+    for (auto &element : elements) {
+    }
+  }
+
   LinkedList<T>(const LinkedList<T> &other) { AppendAll(&other); }
 
   LinkedList<T> &operator=(const LinkedList<T>) = delete;
@@ -63,13 +72,13 @@ public:
       std::cout << "ERROR" << std::endl;
     }
     for (int i = 1; ptr != nullptr; i++) {
-      std::cout << ptr->value_ << std::endl;
+      std::cout << *ptr << std::endl;
       ptr = ptr->next_;
     }
     std::cout << std::endl;
   }
 
-  void Append(const T &value) {
+  void Append(T &value) {
     Node<T> *new_node = new Node<T>;
     new_node->value_ = value;
     new_node->next_ = nullptr;
@@ -81,10 +90,8 @@ public:
     tail_ = new_node;
   }
 
-
-  // TODO(Nariman): подумать куда выделять память, скорее тут связанно с iterator
-  void Append(const T &&value) {
-    Node<T> *new_node = new Node<T>;
+  void Append(T &&value) {
+    Node<T> *new_node = static_cast<Node<T> *>(::operator new(sizeof(T)));
     ::new (new_node) T(std::move(value));
     new_node->next_ = nullptr;
     if (head_ == nullptr) {
@@ -93,11 +100,9 @@ public:
       tail_->next_ = new_node;
     }
     tail_ = new_node;
-    //  new_node = nullptr;
-    //  delete new_node;
   }
 
-  void Prepend(T value) {
+  void Prepend(const T &value) {
     Node<T> *new_node = new Node<T>;
     new_node->value_ = value;
     if (head_ == nullptr) {
@@ -109,7 +114,19 @@ public:
     }
   }
 
-  void InsertAt(T index, T value) {
+  void Prepend(T &&value) {
+    Node<T> *new_node = static_cast<Node<T> *>(::operator new(sizeof(T)));
+    ::new (new_node) T(std::move(value));
+    if (head_ == nullptr) {
+      head_ = new_node;
+      tail_ = new_node;
+    } else {
+      new_node->next_ = head_;
+      head_ = new_node;
+    }
+  }
+
+  void InsertAt(int index, const T &value) {
     if (index > Length()) {
       exit(-1);
     } else if (Length() == -1) {
@@ -118,7 +135,24 @@ public:
       Node<T> *new_node = new Node<T>;
       new_node->value_ = value;
       Node<T> *ptr = head_;
-      for (int i = 0; ptr != nullptr && i < index; i++) {
+      for (int i = 0; ptr != nullptr && i < index + 1; i++) {
+        ptr = ptr->next_;
+      }
+      new_node->next_ = ptr->next_;
+      ptr->next_ = new_node;
+      ptr = nullptr;
+      delete ptr;
+    }
+  }
+
+  void InsertAt(int index, T &&value) {
+    if (Length() == 0) {
+      Append(std::move(value));
+    } else {
+      Node<T> *new_node = static_cast<Node<T> *>(::operator new(sizeof(T)));
+      ::new (new_node) T(std::move(value));
+      Node<T> *ptr = head_;
+      for (int i = 0; ptr != nullptr && i < index + 1; i++) {
         ptr = ptr->next_;
       }
       new_node->next_ = ptr->next_;
@@ -131,11 +165,12 @@ public:
   void AppendAll(const LinkedList<T> &that) {
     Node<T> *node = that.head_;
     while (node != nullptr) {
-      Append(node->value_);
+      Append(std::move(node->value_));
       node = node->next_;
     }
   }
-  void RemoveAt(T index) {
+
+  void RemoveAt(int index) {
     if (head_ == nullptr || index <= -1) {
       exit(-1);
     } else {
@@ -143,20 +178,21 @@ public:
       Node<T> *node_index = nullptr;
 
       for (int i = 0; ptr != nullptr && i < index - 1; i++) {
-        ptr = ptr->next;
+        ptr = ptr->next_;
       }
 
       node_index = ptr->next_;
-      ptr->next = ptr->next->next;
-      delete node_index;
+      ptr->next_ = ptr->next_->next_;
+      node_index->value_.~T();
+      node_index->next_ = nullptr;
     }
   }
 
   void RemoveAll() {
     Node<T> *current = head_;
     while (current != nullptr) {
-      current = current->next;
-      delete head_;
+      current = current->next_;
+      head_->value_.~T();
       head_ = current;
     }
     tail_ = nullptr;
@@ -164,16 +200,16 @@ public:
 
   T Pop() {
     if (head_ == nullptr) {
-      return -1;
+      exit(-1);
     }
     Node<T> *ptr = head_;
 
     for (int i = 0; ptr->next_ != tail_; i++) {
-      ptr = ptr->next;
+      ptr = ptr->next_;
     }
 
     T a = T(std::move(tail_->value_));
-    delete tail_;
+    tail_->value_.~T();
     ptr->next_ = nullptr;
     tail_ = ptr; /*Выделять памяять занова для this->tail?*/
     return a;
@@ -182,8 +218,8 @@ public:
   T Dequeue() {
     Node<T> *first = head_;
     head_ = head_->next_;
-    T a = first->value;
-    delete first;
+    T a = std::move(first->value_);
+    first->value_.~T();
     return a;
   }
 
@@ -224,3 +260,4 @@ public:
 
   virtual ~LinkedList<T>() { delete head_; }
 };
+} // namespace linkedlist

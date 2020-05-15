@@ -4,6 +4,7 @@
 #include <bits/unique_ptr.h>
 #include <iostream>
 
+namespace arraylist {
 template <typename T> class ArrayList {
 private:
   T *array_{};
@@ -16,9 +17,8 @@ private:
 
     for (int i = 0; i < length_ + 1; i++) {
       ::new (new_buf + i)
-          T(std::move(array_[i])); // TODO(Nariman): Move сразу удаляет из
-                                   // памяти объект сам?
-      array_[i].~T(); // old object "wrapper" should be deleted
+          T(std::move(array_[i])); // TODO(Nariman): Move сразу удаляет и
+      array_[i].~T();
     }
 
     ::operator delete(array_);
@@ -252,3 +252,4 @@ public:
     length_ = -1;
   }
 };
+} // namespace arraylist

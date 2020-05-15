@@ -1,23 +1,97 @@
 #include "../include/array_list.h"
-#include <gtest/gtest.h>
-//  #include "../include/linked_list.h"
+#include "../include/linked_list.h"
 #include "vector"
 #include <bits/unique_ptr.h>
-
+#include <gtest/gtest.h>
 
 using namespace std;
 
-// static void AssertEq(int expected, int actual, const char *msg) {
-//  if (expected != actual) {
-//    cout << "Test failed: %s\n expected %d but got %d\n"
-//         << ", " << msg << ", " << expected << ", " << actual << endl;
-//    exit(-1);
-//  }
-//}
-
 TEST(ArrayList, arraylist_just_create_arr_Test) {
-  ArrayList<std::unique_ptr<int>> arrayList;
+  arraylist::ArrayList<std::unique_ptr<int>> arrayList;
+}
 
+TEST(LinkedList, linkedlist_just_create_arr_Test) {
+  linkedlist::LinkedList<std::unique_ptr<int>> linkedList_one = {
+      std::make_unique<int>(42)};
+  linkedlist::LinkedList<int> linkedList_two;
+}
+
+TEST(LinkedList, linkedlist_append_and_prepend_Test) {
+  linkedlist::LinkedList<std::unique_ptr<int>> linkedList;
+  linkedList.Append(std::make_unique<int>(42));
+  ASSERT_EQ(*(linkedList[0]), 42);
+  ASSERT_EQ(linkedList.Length(), 1);
+  linkedList.Append(std::make_unique<int>(62));
+  ASSERT_EQ(*(linkedList[1]), 62);
+  ASSERT_EQ(linkedList.Length(), 2);
+  linkedList.Prepend(std::make_unique<int>(24));
+  ASSERT_EQ(*(linkedList[0]), 24);
+  ASSERT_EQ(*(linkedList[1]), 42);
+  ASSERT_EQ(*(linkedList[2]), 62);
+  ASSERT_EQ(linkedList.Length(), 3);
+}
+
+TEST(LinkedList, linkedlist_insert_at_Test) {
+  linkedlist::LinkedList<std::unique_ptr<int>> linkedList;
+  linkedList.InsertAt(0, std::make_unique<int>(1));
+  ASSERT_EQ(*(linkedList[0]), 1);
+}
+
+TEST(LinkedList, linkedlist_pop_and_deque_Test) {
+  linkedlist::LinkedList<std::unique_ptr<int>> linkedList;
+  linkedList.Append(std::make_unique<int>(1));
+  linkedList.Append(std::make_unique<int>(2));
+  linkedList.Append(std::make_unique<int>(4));
+  linkedList.Append(std::make_unique<int>(3));
+  ASSERT_EQ(linkedList.Length(), 4);
+  ASSERT_EQ(*(linkedList.Pop()), 3);
+  ASSERT_EQ(*(linkedList.Dequeue()), 1);
+  ASSERT_EQ(linkedList.Length(), 2);
+}
+
+TEST(LinkedList, linkedlist_remove_at_and_remove_Test) {
+  linkedlist::LinkedList<std::unique_ptr<int>> linkedList;
+  linkedList.Append(std::make_unique<int>(1));
+  linkedList.Append(std::make_unique<int>(2));
+  linkedList.Append(std::make_unique<int>(4));
+  linkedList.Append(std::make_unique<int>(3));
+  linkedList.RemoveAt(2);
+  ASSERT_EQ(linkedList.Length(), 3);
+  ASSERT_EQ(*(linkedList[0]), 1);
+  ASSERT_EQ(*(linkedList[1]), 2);
+  ASSERT_EQ(*(linkedList[2]), 3);
+  linkedList.RemoveAll();
+  ASSERT_EQ(linkedList.Length(), 0);
+}
+
+TEST(LinkedList, linkedlist_remove_all_Test) {
+  linkedlist::LinkedList<std::unique_ptr<int>> linkedList_one;
+  linkedList_one.Append(std::make_unique<int>(1));
+  linkedList_one.Append(std::make_unique<int>(2));
+  linkedList_one.Append(std::make_unique<int>(3));
+  linkedList_one.Append(std::make_unique<int>(4));
+
+  linkedlist::LinkedList<std::unique_ptr<int>> linkedList_two;
+  linkedList_one.Append(std::make_unique<int>(5));
+  linkedList_one.Append(std::make_unique<int>(6));
+  linkedList_one.Append(std::make_unique<int>(7));
+  linkedList_one.Append(std::make_unique<int>(8));
+
+  linkedList_one.AppendAll(linkedList_two);
+  ASSERT_EQ(linkedList_one.Length(), 8);
+  ASSERT_EQ(*(linkedList_one[0]), 1);
+  ASSERT_EQ(*(linkedList_one[1]), 2);
+  ASSERT_EQ(*(linkedList_one[2]), 3);
+  ASSERT_EQ(*(linkedList_one[3]), 4);
+  ASSERT_EQ(*(linkedList_one[4]), 5);
+  ASSERT_EQ(*(linkedList_one[5]), 6);
+  ASSERT_EQ(*(linkedList_one[6]), 7);
+  ASSERT_EQ(*(linkedList_one[7]), 8);
+
+  //  ASSERT_EQ(*(linkedList_one[4]), 5);
+  //  ASSERT_EQ(*(linkedList_one[5]), 6);
+  //  ASSERT_EQ(*(linkedList_one[6]), 7);
+  //  ASSERT_EQ(*(linkedList_one[7]), 8);
 }
 
 //
@@ -169,9 +243,9 @@ TEST(ArrayList, arraylist_just_create_arr_Test) {
 //    Printf(list_two);
 
 /*Questions
+ * Про std::move в POP можно ли было по-другому
+ * AppedAll and Printf
  * Как сделать range based for
  * Почему написанно деструкторы
- *Конструктор копирования, оба объекта указывают на 1 массив или на 2 в
- *linkedlist Если придет не пустой массив в конструктор копирования Что лучше
- *сначала увеличивать index, а потом вставлять или наоборот? Chat Coding Garden
+ *Что лучше сначала увеличивать index, а потом вставлять или наоборот?
  * */
